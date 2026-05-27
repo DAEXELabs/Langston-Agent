@@ -11,18 +11,11 @@ function jsonResponse(statusCode, body) {
     headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type,x-langston-access-code",
+      "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Allow-Methods": "POST,OPTIONS"
     },
     body: JSON.stringify(body)
   };
-}
-
-function checkAccess(event) {
-  const required = process.env.LANGSTON_ACCESS_CODE;
-  if (!required) return true;
-  const provided = event.headers["x-langston-access-code"] || event.headers["X-Langston-Access-Code"];
-  return provided === required;
 }
 
 function loadBrain() {
@@ -91,19 +84,22 @@ async function createAnswer({ client, brain, prompt, conversation, summaryText, 
 
   const response = await client.chat.completions.create({
     model,
-    temperature: 0.2,
+    temperature: 0.4,
     messages: [
       {
         role: "system",
         content: `${brain.protected_system_prompt || "You are Langston."}
 
 Langston intelligence layer:
-- Use the NLU plan to decide what the user wants.
-- Be concise, operational, and leadership-ready.
+- Operate like a natural chat assistant first.
+- Understand what the user is asking and answer directly.
+- Do not force every answer into a QC report format.
+- Be conversational, helpful, calm, and clear.
+- Use the NLU plan only as background guidance, not as something to mention to the user.
 - Give numbers only from the available QC summary.
-- If data is missing, say Not found in available data.
-- Never invent job counts, payment status, customer names, technicians, or ServiceTitan details.
-- Recommend validation in ServiceTitan before coaching, escalation, refunds, warranty exceptions, HR, legal, safety, or pay decisions.
+- If data is missing, say what is missing in plain language.
+- Keep job counts, payment status, customer names, technicians, and ServiceTitan details grounded in the available records.
+- Recommend validation in ServiceTitan before important coaching, escalation, refund, warranty, HR, legal, safety, or pay decisions.
 
 Daily QC Summary Format:
 ${brain.daily_qc_summary_format || ""}
@@ -132,7 +128,7 @@ ${sourceLine}
 Available QC data summary:
 ${summaryText}
 
-Answer the current request.`
+Answer naturally.`
       }
     ]
   });
@@ -143,7 +139,6 @@ Answer the current request.`
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return jsonResponse(200, {});
   if (event.httpMethod !== "POST") return jsonResponse(405, { error: "Method not allowed" });
-  if (!checkAccess(event)) return jsonResponse(401, { error: "Invalid Langston access code." });
 
   try {
     const body = JSON.parse(event.body || "{}");
