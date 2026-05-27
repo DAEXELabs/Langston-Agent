@@ -3,6 +3,7 @@ const path = require("path");
 const OpenAI = require("openai");
 const { analyzeQcData, formatDailySummary, focusPriorities } = require("./qcEngine");
 const { modelNlu, localNlu } = require("./nluEngine");
+const { createLangstonAnswer } = require("./llmEngine");
 const { fetchServiceTitanJobs } = require("./serviceTitanClient");
 
 function jsonResponse(statusCode, body) {
@@ -74,68 +75,6 @@ async function createNlu(prompt, client) {
   }
 }
 
-async function createAnswer({ client, brain, prompt, conversation, summaryText, nlu, serviceTitanResult, local }) {
-  if (!client) return local;
-
-  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-  const sourceLine = serviceTitanResult
-    ? `Langston pulled ${serviceTitanResult.records.length} ServiceTitan record(s) for ${nlu.dateRange.label}.`
-    : "No live ServiceTitan pull was performed for this turn.";
-
-  const response = await client.chat.completions.create({
-    model,
-    temperature: 0.4,
-    messages: [
-      {
-        role: "system",
-        content: `${brain.protected_system_prompt || "You are Langston."}
-
-Langston intelligence layer:
-- Operate like a natural chat assistant first.
-- Understand what the user is asking and answer directly.
-- Do not force every answer into a QC report format.
-- Be conversational, helpful, calm, and clear.
-- Use the NLU plan only as background guidance, not as something to mention to the user.
-- Give numbers only from the available QC summary.
-- If data is missing, say what is missing in plain language.
-- Keep job counts, payment status, customer names, technicians, and ServiceTitan details grounded in the available records.
-- Recommend validation in ServiceTitan before important coaching, escalation, refund, warranty, HR, legal, safety, or pay decisions.
-
-Daily QC Summary Format:
-${brain.daily_qc_summary_format || ""}
-
-Required Form Rules:
-${brain.required_form_rules || ""}
-
-Coaching Language:
-${brain.coaching_language || ""}
-
-Guardrails:
-${brain.guardrails || ""}`
-      },
-      ...conversation,
-      {
-        role: "user",
-        content: `Current user request:
-${prompt}
-
-NLU plan:
-${JSON.stringify(nlu, null, 2)}
-
-Data source:
-${sourceLine}
-
-Available QC data summary:
-${summaryText}
-
-Answer naturally.`
-      }
-    ]
-  });
-
-  return response.choices?.[0]?.message?.content?.trim() || local;
-}
-
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return jsonResponse(200, {});
   if (event.httpMethod !== "POST") return jsonResponse(405, { error: "Method not allowed" });
@@ -145,6 +84,7 @@ exports.handler = async (event) => {
     const prompt = body.prompt || "";
     let qcData = Array.isArray(body.qcData) ? body.qcData : [];
     const client = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
     const nlu = await createNlu(prompt, client);
     let serviceTitanResult = null;
     let dataSourceError = null;
@@ -181,15 +121,16 @@ exports.handler = async (event) => {
 
     const brain = loadBrain();
     const local = localAnswer(prompt, summary, nlu, serviceTitanResult);
-    const answer = await createAnswer({
+    const answer = await createLangstonAnswer({
       client,
+      model,
       brain,
       prompt,
       conversation: recentConversation(body.messages),
       summaryText,
       nlu,
       serviceTitanResult,
-      local
+      fallback: local
     });
 
     return jsonResponse(200, {
