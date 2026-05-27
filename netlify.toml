@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/langston"
+  to = "/.netlify/functions/langston"
+  status = 200
+
+[[redirects]]
+  from = "/api/servicetitan"
+  to = "/.netlify/functions/servicetitan"
+  status = 200

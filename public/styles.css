@@ -1,0 +1,284 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f1217;
+  --panel: #171d24;
+  --panel-strong: #202832;
+  --line: #323d4a;
+  --text: #f5f7fa;
+  --muted: #a2adba;
+  --accent: #2f80ed;
+  --accent-strong: #1f68c9;
+  --signal: #72d6c9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.shell {
+  width: min(900px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 28px 0;
+}
+
+.topbar,
+.access-panel,
+.chat-panel,
+.history-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.topbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 20px;
+  background: #f7f4ec;
+  border-color: #c7a25a;
+}
+
+h2,
+p {
+  margin-top: 0;
+}
+
+.brand {
+  min-width: 0;
+}
+
+.brand img {
+  display: block;
+  width: min(680px, 100%);
+  height: auto;
+  max-height: 128px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+h2 {
+  margin-bottom: 6px;
+  font-size: 22px;
+}
+
+p {
+  color: var(--muted);
+}
+
+.access-panel {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 380px);
+  gap: 16px;
+  align-items: end;
+  margin-top: 16px;
+  padding: 22px;
+}
+
+.access-row {
+  display: flex;
+  gap: 10px;
+}
+
+.access-row input {
+  min-width: 0;
+  flex: 1;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.history-panel {
+  min-height: 560px;
+  padding: 16px;
+}
+
+.history-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.history-heading h2 {
+  margin-bottom: 0;
+  font-size: 18px;
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.history-item {
+  min-height: 42px;
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item:hover,
+.history-item.active {
+  border-color: var(--line);
+  background: #10161e;
+  color: var(--text);
+}
+
+.chat-panel {
+  padding: 22px;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.hidden {
+  display: none;
+}
+
+input,
+textarea,
+button {
+  min-height: 44px;
+  border-radius: 6px;
+  font: inherit;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #10161e;
+  color: var(--text);
+  padding: 11px 12px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  border: 0;
+  background: var(--accent);
+  color: white;
+  padding: 0 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+button.secondary {
+  border: 1px solid var(--line);
+  background: #202832;
+}
+
+button.secondary:hover {
+  background: #293340;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.chat-log {
+  height: min(56vh, 500px);
+  min-height: 340px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #10161e;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.msg {
+  max-width: 80%;
+  margin: 8px 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.msg.user {
+  margin-left: auto;
+  background: #193f77;
+}
+
+.msg.assistant {
+  background: var(--panel-strong);
+}
+
+.prompt-row {
+  display: grid;
+  grid-template-columns: 1fr 112px;
+  gap: 10px;
+}
+
+.prompt-row textarea {
+  height: 82px;
+}
+
+@media (max-width: 720px) {
+  .shell {
+    width: min(100% - 20px, 900px);
+    padding-top: 10px;
+  }
+
+  .topbar,
+  .access-panel,
+  .workspace,
+  .panel-heading,
+  .prompt-row {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .brand img {
+    width: 100%;
+    max-height: 110px;
+    object-position: center;
+  }
+
+  .history-panel {
+    min-height: auto;
+  }
+
+  .history-list {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(150px, 1fr);
+    overflow-x: auto;
+  }
+
+  .msg {
+    max-width: 100%;
+  }
+}

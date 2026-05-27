@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Langston is an operations intelligence assistant for ServiceTitan QC and field leadership."
+    />
+    <title>Langston</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="/langston_header_transparent.png" alt="Langston AI Agent" />
+        </div>
+      </header>
+
+      <section class="access-panel" id="accessCard">
+        <div>
+          <h2>Private Access</h2>
+          <p>Enter the Langston access code configured in Netlify.</p>
+        </div>
+        <div class="access-row">
+          <input id="accessCode" type="password" placeholder="Access code" autocomplete="current-password" />
+          <button id="saveAccess" type="button">Unlock</button>
+        </div>
+      </section>
+
+      <main id="appMain" class="hidden">
+        <div class="workspace">
+          <aside class="history-panel" aria-label="Chat history">
+            <div class="history-heading">
+              <h2>History</h2>
+              <button id="newChat" class="secondary" type="button">New</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+          </aside>
+
+          <section class="chat-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Ask Langston</h2>
+                <p>Ask for QC, coaching focus, follow-up, payments, forms, or ServiceTitan jobs.</p>
+              </div>
+            </div>
+
+            <div id="chatLog" class="chat-log" aria-live="polite"></div>
+
+            <div class="prompt-row">
+              <textarea
+                id="promptInput"
+                placeholder="Ask Langston to pull today&apos;s QC from ServiceTitan, or ask what needs attention."
+              ></textarea>
+              <button id="sendPrompt" type="button">Ask</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

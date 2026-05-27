@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "build": "node build.js",
+    "dev": "netlify dev",
+    "test": "node test/qcEngine.test.js && node test/nluEngine.test.js"
+  },
+  "dependencies": {
+    "@netlify/functions": "^2.8.2",
+    "openai": "^4.73.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^26.0.2"
+  }
+}
