@@ -5,6 +5,7 @@ const { analyzeQcData, formatDailySummary, focusPriorities } = require("./qcEngi
 const { modelNlu, localNlu } = require("./nluEngine");
 const { createLangstonAnswer } = require("./llmEngine");
 const { fetchServiceTitanJobs } = require("./serviceTitanClient");
+const { createPlan, executePlan } = require("./planningEngine");
 
 function jsonResponse(statusCode, body) {
   return {
@@ -120,18 +121,31 @@ exports.handler = async (event) => {
     if (body.summaryOnly) return jsonResponse(200, { summary, summaryText, nlu });
 
     const brain = loadBrain();
+
+    // Planning Loop Trigger (for complex queries)
+    let usePlanning = nlu.intent === "general_ops_question" ||
+                      prompt.toLowerCase().includes("plan") ||
+                      prompt.toLowerCase().includes("how should") ||
+                      prompt.length > 100; // heuristic
+
+    let answer;
     const local = localAnswer(prompt, summary, nlu, serviceTitanResult);
-    const answer = await createLangstonAnswer({
-      client,
-      model,
-      brain,
-      prompt,
-      conversation: recentConversation(body.messages),
-      summaryText,
-      nlu,
-      serviceTitanResult,
-      fallback: local
-    });
+    if (usePlanning && client) {
+      const plan = await createPlan(client, model, prompt, nlu, summaryText, brain);
+      answer = await executePlan(client, model, plan, prompt, brain, qcData);
+    } else {
+      answer = await createLangstonAnswer({
+        client,
+        model,
+        brain,
+        prompt,
+        conversation: recentConversation(body.messages),
+        summaryText,
+        nlu,
+        serviceTitanResult,
+        fallback: local
+      });
+    }
 
     return jsonResponse(200, {
       answer,
